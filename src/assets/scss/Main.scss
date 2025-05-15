@@ -1,0 +1,115 @@
+// src/assets/scss/Main.scss
+
+.main-container {
+  font-family: 'Arial', sans-serif;
+  padding: 20px;
+  background-color: #f8f9fb;
+}
+
+.main-header {
+  display: flex;
+  
+  .logo-image {
+    width: 100px;         // 텍스트 font-size(24px)와 동일하게
+    height: 100px;
+    margin-right: 4px;   // 로고와 텍스트 사이 간격
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 30px;
+  }
+}
+
+.main-content {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.location-select {
+  flex: 1 1 300px;
+  background: #dff2ff;
+  padding: 20px;
+  border-radius: 10px;
+
+  h2 { margin-bottom: 10px; }
+
+  .dropdowns {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+
+    select {
+      flex: 1;
+      padding: 8px;
+      border-radius: 5px;
+    }
+  }
+
+  .region-list {
+    max-height: 150px;
+    overflow-y: auto;
+
+    p { margin: 5px 0; }
+  }
+}
+
+.map-section {
+  flex: 1 1 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+  .map-container {
+    width: 100%;
+    height: 400px;                // 원하는 높이 조정
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .region-summary {
+    background-color: #e9f4f9;
+    padding: 15px;
+    border-radius: 10px;
+    min-height: 300px;
+
+    h3 { margin-bottom: 10px; }
+    p  { margin: 4px 0; }
+  }
+}
+
+.visual-section {
+  flex: 1 1 100%;
+  margin-top: 30px;
+
+  h2 { margin-bottom: 10px; }
+
+  .bar-chart {
+    display: flex;
+    gap: 10px;
+
+    .bar {
+      background-color: #a0c4ff;
+      padding: 10px;
+      text-align: center;
+      border-radius: 6px;
+      flex: 1;
+    }
+  }
+}
