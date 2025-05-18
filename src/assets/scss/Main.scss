@@ -10,9 +10,9 @@
   display: flex;
   
   .logo-image {
-    width: 100px;         // 텍스트 font-size(24px)와 동일하게
+    width: 100px;
     height: 100px;
-    margin-right: 4px;   // 로고와 텍스트 사이 간격
+    margin-right: 4px;
 
     img {
       width: 100%;
@@ -69,15 +69,39 @@
   flex-direction: column;
   gap: 15px;
 
+  .search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 8px 12px;
+      border: none;
+      background-color: #4a90e2;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  }
+
   .map-container {
     width: 100%;
-    height: 400px;                // 원하는 높이 조정
+    height: 400px;                
     border: 2px solid #ccc;
     border-radius: 10px;
     overflow: hidden;
     position: relative;
 
     #map {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
     }
