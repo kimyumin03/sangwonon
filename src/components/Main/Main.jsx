@@ -25,6 +25,12 @@ export default function Main() {
   const mapInstanceRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // 가나다순 정렬된 행정동 리스트
+  const sortedCenters = React.useMemo(
+    () => [...centers].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
+    []
+  );
+
   useEffect(() => {
     // Load Leaflet CSS
     const link = document.createElement('link');
@@ -119,13 +125,21 @@ export default function Main() {
         <section className="location-select">
           <h2>지역을 선택하세요.</h2>
           <div className="dropdowns">
-            <select><option>서울시</option></select>
-            <select><option>군</option></select>
-            <select><option>구</option></select>
+            <select
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            >
+              <option value="">서울시</option>
+              {sortedCenters.map(d => (
+                <option key={d.name} value={d.name}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+            <button onClick={handleSearch}>찾기</button>
           </div>
           <div className="region-list">
             <p>서울시 강남구 상권은 어떠세요.</p>
-            <p>서울 OO시는 ~</p>
             <p>서울 OO시는 ~</p>
             <p>서울 OO시는 ~</p>
             <p>서울 OO시는 ~</p>
@@ -134,17 +148,8 @@ export default function Main() {
 
         {/* 지도 섹션 */}
         <section className="map-section">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="행정동 이름을 입력하세요"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-            <button onClick={handleSearch}>찾기</button>
-          </div>
           <div className="map-container">
-            <div id="map" ref={mapRef} />
+            <div id="map" ref={mapRef} style={{ height: '400px' }} />
           </div>
           <div className="region-summary">
             <h3>이런 상권은 어때요?</h3>
