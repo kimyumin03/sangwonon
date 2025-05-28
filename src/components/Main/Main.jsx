@@ -23,36 +23,36 @@ const haversine = (lat1, lon1, lat2, lon2) => {
 export default function Main() {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [resultText, setResultText] = useState('');
 
-  // 가나다순 정렬된 행정동 리스트
   const sortedCenters = React.useMemo(
     () => [...centers].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
     []
   );
 
   useEffect(() => {
-    // Load Leaflet CSS
+    // Leaflet CSS 동적 로드
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
     document.head.appendChild(link);
 
-    // Load Leaflet JS
+    // Leaflet JS 동적 로드
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.crossOrigin = '';
     script.onload = () => {
       const L = window.L;
       if (!mapInstanceRef.current) {
-        // initialize map
-        const map = L.map(mapRef.current).setView([37.5665, 126.9780], 12);
+        const map = L.map(mapRef.current).setView([37.5665, 126.978], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
+          attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         mapInstanceRef.current = map;
 
-        // load public data markers
+        // 공공 데이터 마커 추가
         fetch(
           `https://api.odcloud.kr/api/15012005/v1/centers?serviceKey=${CERT_KEY}&page=1&perPage=100`
         )
@@ -68,7 +68,7 @@ export default function Main() {
           })
           .catch(console.error);
 
-        // click to add marker and show nearest dong
+        // 지도 클릭 시 마커 및 팝업
         map.on('click', e => {
           const { lat, lng } = e.latlng;
           let nearest = { name: null, dist: Infinity };
@@ -93,22 +93,48 @@ export default function Main() {
     };
   }, []);
 
-  const handleSearch = () => {
+  // 상권분석 API 호출 및 지도 이동, 마커 표시
+  const handleSearchAndAnalyze = async () => {
+    if (!searchTerm) {
+      alert('행정동을 선택해주세요.');
+      return;
+    }
     const map = mapInstanceRef.current;
-    if (!map || !searchTerm) return;
-    // find exact match
+    if (!map) return;
+
     const found = centers.find(d => d.name === searchTerm);
     if (!found) {
       alert(`"${searchTerm}" 행정동을 찾을 수 없습니다.`);
       return;
     }
-    // pan to location
+
     map.setView([found.lat, found.lng], 15);
-    // add marker
-    window.L.marker([found.lat, found.lng])
+
+    // 기존 마커 제거
+    markersRef.current.forEach(marker => map.removeLayer(marker));
+    markersRef.current = [];
+
+    // 새 마커 추가
+    const L = window.L;
+    const newMarker = L.marker([found.lat, found.lng])
       .addTo(map)
       .bindPopup(`행정동: ${found.name}`)
       .openPopup();
+    markersRef.current.push(newMarker);
+
+    try {
+      const apiUrl = `https://swapi-j46r.onrender.com/predict?dong_name=${encodeURIComponent(
+        searchTerm
+      )}`;
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
+
+      const data = await res.json();
+
+      setResultText(data.result || '분석 결과가 없습니다.');
+    } catch (error) {
+      setResultText(`분석 중 오류가 발생했습니다: ${error.message}`);
+    }
   };
 
   return (
@@ -130,19 +156,18 @@ export default function Main() {
               onChange={e => setSearchTerm(e.target.value)}
             >
               <option value="">서울시</option>
-              {sortedCenters.map(d => (
-                <option key={d.name} value={d.name}>
+              {sortedCenters.map((d, index) => (
+                <option key={`${d.name}-${index}`} value={d.name}>
                   {d.name}
                 </option>
               ))}
             </select>
-            <button onClick={handleSearch}>찾기</button>
+            <button onClick={handleSearchAndAnalyze}>상권 분석하기</button>
           </div>
-          <div className="region-list">
-            <p>서울시 강남구 상권은 어떠세요.</p>
-            <p>서울 OO시는 ~</p>
-            <p>서울 OO시는 ~</p>
-            <p>서울 OO시는 ~</p>
+          <div className="region-list" style={{ whiteSpace: 'pre-wrap' }}>
+            {resultText
+              ? resultText
+              : '선택한 행정동의 상권분석 결과가 여기 표시됩니다.'}
           </div>
         </section>
 
