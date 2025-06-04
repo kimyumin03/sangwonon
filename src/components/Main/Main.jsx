@@ -185,7 +185,7 @@ export default function Main() {
         </section>
 
         {/* 시각화 보조자료 섹션 */}
-        <section className="visual-section">
+        {/* <section className="visual-section">
           <h2>시각화 보조자료</h2>
           <div className="bar-chart">
             <div className="bar">강남역</div>
@@ -193,7 +193,7 @@ export default function Main() {
             <div className="bar">신촌</div>
             <div className="bar">종로3가</div>
           </div>
-        </section>
+        </section> */}
       </div>
     </div>
   );
