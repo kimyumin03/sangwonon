@@ -13,9 +13,7 @@ const haversine = (lat1, lon1, lat2, lon2) => {
   const dLon = toRad(lon2 - lon1);
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
@@ -27,7 +25,7 @@ export default function Main() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [resultText, setResultText] = useState('');
-  const [recommendList, setRecommendList] = useState([]); // 객체 배열
+  const [recommendList, setRecommendList] = useState([]);
 
   // 행정동 이름 가나다순 정렬
   const sortedCenters = React.useMemo(
@@ -36,26 +34,22 @@ export default function Main() {
   );
 
   useEffect(() => {
-    // Leaflet CSS 동적 로드
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
     document.head.appendChild(link);
 
-    // Leaflet JS 동적 로드
     const script = document.createElement('script');
     script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
     script.crossOrigin = '';
     script.onload = () => {
       const L = window.L;
-      if (!mapInstanceRef.current) {
+      if (!mapInstanceRef.current && mapRef.current) {
         const map = L.map(mapRef.current).setView([37.5665, 126.978], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         mapInstanceRef.current = map;
-
-        // 공공 데이터 마커 추가
         fetch(
           `https://api.odcloud.kr/api/15012005/v1/centers?serviceKey=${CERT_KEY}&page=1&perPage=100`
         )
@@ -70,8 +64,6 @@ export default function Main() {
             });
           })
           .catch(console.error);
-
-        // 지도 클릭 시 가까운 행정동 이름 표시
         map.on('click', e => {
           const { lat, lng } = e.latlng;
           let nearest = { name: null, dist: Infinity };
@@ -88,88 +80,66 @@ export default function Main() {
         });
       }
     };
-    document.body.appendChild(script);
-
+    document.head.appendChild(script);
     return () => {
       document.head.removeChild(link);
-      document.body.removeChild(script);
+      document.head.removeChild(script);
     };
   }, []);
 
-  // 상권분석 및 추천 API 호출 핸들러
   const handleSearchAndAnalyze = async () => {
-    if (!searchTerm) {
-      alert('행정동을 선택해주세요.');
-      return;
-    }
+    if (!searchTerm) return alert('행정동을 선택해주세요.');
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // 선택한 행정동의 좌표 찾기
     const found = centers.find(d => d.name === searchTerm);
-    if (!found) {
-      alert(`"${searchTerm}" 행정동을 찾을 수 없습니다.`);
-      return;
-    }
-
-    // 지도 뷰 이동
+    if (!found) return alert(`${searchTerm} 행정동을 찾을 수 없습니다.`);
     map.setView([found.lat, found.lng], 15);
-
-    // 기존 마커 제거
-    markersRef.current.forEach(marker => map.removeLayer(marker));
+    markersRef.current.forEach(m => map.removeLayer(m));
     markersRef.current = [];
-
-    // 새 마커 추가
     const L = window.L;
-    const newMarker = L.marker([found.lat, found.lng])
-      .addTo(map)
-      .bindPopup(`행정동: ${found.name}`)
-      .openPopup();
-    markersRef.current.push(newMarker);
+    const marker = L.marker([found.lat, found.lng]).addTo(map).bindPopup(found.name).openPopup();
+    markersRef.current.push(marker);
 
-    // 1) 분석 텍스트 가져오기
+    // 예측 결과
     try {
-      const predictRes = await fetch(
+      const res = await fetch(
         `https://swapi-j46r.onrender.com/predict?dong_name=${encodeURIComponent(
           searchTerm
         )}`
       );
-      if (!predictRes.ok) throw new Error(`서버 오류: ${predictRes.status}`);
-      const predictData = await predictRes.json();
-      setResultText(predictData.result || '분석 결과가 없습니다.');
-    } catch (error) {
-      setResultText(`분석 중 오류가 발생했습니다: ${error.message}`);
+      if (!res.ok) throw new Error(res.status);
+      const { result } = await res.json();
+      setResultText(result);
+    } catch (e) {
+      setResultText(`분석 오류: ${e.message}`);
     }
 
-    // 2) Top-5 추천 상권 리스트 가져오기
+    // 추천 결과: 상/중/하 등급별 리스트
     try {
-      const recRes = await fetch(
-        `https://swapi-j46r.onrender.com/recommend_sales?dong_name=${encodeURIComponent(
+      const res = await fetch(
+        `https://swapi-j46r.onrender.com/recommend/all?dong_name=${encodeURIComponent(
           searchTerm
         )}&top_n=5`
       );
-      if (!recRes.ok) throw new Error(`추천 API 오류: ${recRes.status}`);
-      const recJson = await recRes.json();
-      // 객체 배열 그대로 저장
-      setRecommendList(recJson['상등급_향후매출_추천'] || []);
-    } catch (error) {
-      console.error('추천 불러오기 실패:', error);
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      setRecommendList(data.recommendations || []);
+    } catch (e) {
+      console.error('추천 불러오기 실패:', e);
       setRecommendList([]);
     }
   };
 
   return (
     <div className="main-container">
-      {/* 헤더 */}
       <header className="main-header">
         <div className="logo-image">
           <img src="/image/On_image.png" alt="상권온 로고" />
         </div>
         <div className="logo">상권온(ON)</div>
       </header>
-
       <div className="main-content">
-        {/* 지역 선택 및 결과 */}
         <section className="location-select">
           <h2>지역을 선택하세요.</h2>
           <div className="dropdowns">
@@ -179,20 +149,15 @@ export default function Main() {
             >
               <option value="">서울시</option>
               {sortedCenters.map((d, idx) => (
-                <option key={`${d.name}-${idx}`} value={d.name}>
-                  {d.name}
-                </option>
+                <option key={idx} value={d.name}>{d.name}</option>
               ))}
             </select>
             <button onClick={handleSearchAndAnalyze}>상권 분석하기</button>
           </div>
           <div className="region-list" style={{ whiteSpace: 'pre-wrap' }}>
-            {resultText ||
-              '선택한 행정동의 상권분석 결과가 여기 표시됩니다.'}
+            {resultText || '선택한 행정동의 상권분석 결과가 여기 표시됩니다.'}
           </div>
         </section>
-
-        {/* 지도 및 추천 상권 */}
         <section className="map-section">
           <div className="map-container">
             <div id="map" ref={mapRef} style={{ height: '400px' }} />
@@ -202,15 +167,11 @@ export default function Main() {
             {recommendList.length > 0 ? (
               <ul>
                 {recommendList.map((item, idx) => (
-                  <li key={idx}>
-                    {item.행정동} — 평균 향후 매출: {item['평균 향후 매출']}
-                  </li>
+                  <li key={idx}>{item.행정동} — {Object.values(item).filter(v => typeof v === 'string' || typeof v === 'number').slice(-1)[0]}</li>
                 ))}
               </ul>
             ) : (
-              <p>
-                추천 상권을 불러오는 중이거나, 아직 분석을 실행하지 않았습니다.
-              </p>
+              <p>추천 상권을 불러오는 중이거나, 아직 분석을 실행하지 않았습니다.</p>
             )}
           </div>
         </section>
