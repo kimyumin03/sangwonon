@@ -213,7 +213,7 @@ export default function Main() {
                 {recommendData.추천_기준 === '상등급' && (
                   <>
                     <h4>향후 매출 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.향후매출_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -224,7 +224,7 @@ export default function Main() {
                     </ul>
 
                     <h4>피크 유동인구 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.피크유동인구_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -235,7 +235,7 @@ export default function Main() {
                     </ul>
 
                     <h4>상등급 비율 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.상등급_비율_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -251,7 +251,7 @@ export default function Main() {
                 {recommendData.추천_기준 === '중등급' && (
                   <>
                     <h4>매출 증가율 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.매출증가_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -263,7 +263,7 @@ export default function Main() {
                     </ul>
 
                     <h4>유동인구 증가율 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.유동인구증가_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -279,7 +279,7 @@ export default function Main() {
                 {recommendData.추천_기준 === '하등급' && (
                   <>
                     <h4>폐업 위험 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.폐업위험_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -291,7 +291,7 @@ export default function Main() {
                     </ul>
 
                     <h4>소득 낮은 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.소득낮은_상위.map(
                         (it, i) => (
                           <li key={i}>
@@ -302,7 +302,7 @@ export default function Main() {
                     </ul>
 
                     <h4>매출 낮은 Top 5</h4>
-                    <ul>
+                    <ul className="horizontal-list">
                       {recommendData.매출낮은_상위.map(
                         (it, i) => (
                           <li key={i}>
