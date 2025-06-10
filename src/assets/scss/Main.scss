@@ -137,3 +137,16 @@
     }
   }
 }
+
+.horizontal-list {
+  display: flex;
+  flex-wrap: wrap;       
+  gap: 1rem;             
+  padding: 0;            
+  margin: 0;             
+  list-style: none;      
+}
+
+.horizontal-list li {
+  margin: 0;             
+}
