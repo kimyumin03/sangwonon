@@ -137,3 +137,35 @@
     }
   }
 }
+
+/* 3개 카테고리를 나란히 보여주는 컨테이너 */
+.region-summary .recommend-container {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;    /* 공간 부족 시 다음 줄로 내려갑니다 */
+}
+
+/* 개별 카테고리 카드 */
+.region-summary .recommend-category {
+  flex: 1;            /* 균등 분할 */
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* 제목 아래 간격 */
+.region-summary .recommend-category h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* 기본 리스트 스타일 유지 (세로) */
+.region-summary .recommend-category ul {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.region-summary .recommend-category li {
+  margin-bottom: 0.25rem;
+}
